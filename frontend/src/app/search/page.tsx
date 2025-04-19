@@ -4,6 +4,18 @@ import { useEffect, useRef } from "react";
 import { useQueryState } from "nuqs";
 import { api } from "@/trpc/react";
 import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardContent,
+  CardFooter,
+} from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Search, X } from "lucide-react";
 
 export default function SearchFilesPage() {
   // Use URL state for the search query
@@ -72,68 +84,43 @@ export default function SearchFilesPage() {
     <div className="container mx-auto px-4 py-8">
       <div className="mb-6 flex items-center justify-between">
         <h1 className="text-2xl font-bold">Code Search</h1>
-        <Link
-          href="/add-code-file"
-          className="rounded bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
-        >
-          Add New File
-        </Link>
+        <Button asChild variant="default">
+          <Link href="/add-code-file">Add New File</Link>
+        </Button>
       </div>
 
       {/* Search bar */}
       <div className="mb-6 sticky top-0 z-10 bg-[#212121]/95 pt-2 pb-4">
         <div className="relative">
-          <input
-            ref={inputRef}
-            type="text"
-            value={query || ""}
-            onChange={(e) => setQuery(e.target.value || null)}
-            placeholder="Search code..."
-            aria-label="Search code"
-            className="w-full rounded-md border border-[#666] bg-[#111] px-4 py-3 pl-10 text-[#EEE] placeholder-[#888] focus:border-[#7AB] focus:outline-none focus:ring-1 focus:ring-[#7AB]"
-          />
-          <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-5 w-5 text-[#888]"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-              />
-            </svg>
-          </div>
-          {query && (
-            <button
-              onClick={() => setQuery(null)}
-              className="absolute inset-y-0 right-0 flex items-center pr-3 text-[#888] hover:text-[#EEE]"
-              aria-label="Clear search"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-5 w-5"
-                viewBox="0 0 20 20"
-                fill="currentColor"
+          <div className="relative">
+            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+            <Input
+              ref={inputRef}
+              type="text"
+              value={query || ""}
+              onChange={(e) => setQuery(e.target.value || null)}
+              placeholder="Search code..."
+              aria-label="Search code"
+              className="pl-9 bg-background"
+            />
+            {query && (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="absolute right-1 top-1 h-7 w-7 rounded-full"
+                onClick={() => setQuery(null)}
+                aria-label="Clear search"
               >
-                <path
-                  fillRule="evenodd"
-                  d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
-                  clipRule="evenodd"
-                />
-              </svg>
-            </button>
-          )}
+                <X className="h-4 w-4" />
+              </Button>
+            )}
+          </div>
         </div>
       </div>
 
       {/* Results counter - only show when there's a query */}
       {hasSearched && (
-        <div className="mb-4 text-[#888]">
+        <div className="mb-4 text-muted-foreground">
           {isLoading ? (
             <span>Searching...</span>
           ) : (
@@ -148,33 +135,28 @@ export default function SearchFilesPage() {
       {/* Results */}
       {hasSearched ? (
         isLoading ? (
-          <div className="flex-1 flex items-center justify-center">
-            <div className="animate-pulse flex space-x-2">
-              <div className="h-3 w-3 bg-[#7AB] rounded-full"></div>
-              <div className="h-3 w-3 bg-[#7AB] rounded-full"></div>
-              <div className="h-3 w-3 bg-[#7AB] rounded-full"></div>
-            </div>
+          <div className="space-y-4">
+            <Skeleton className="h-[150px] w-full rounded-lg" />
+            <Skeleton className="h-[150px] w-full rounded-lg" />
+            <Skeleton className="h-[150px] w-full rounded-lg" />
           </div>
         ) : filesToDisplay && filesToDisplay.length > 0 ? (
           <div className="space-y-6 overflow-y-auto pb-8">
             {filesToDisplay.map((file: any) => (
-              <div
-                key={file.id}
-                className="rounded-lg border border-[#666] bg-[#111] overflow-hidden"
-              >
-                <div className="border-b border-[#666] bg-[#1a1a1a] p-3 flex justify-between items-center">
-                  <h3 className="font-mono text-[#EEE]">
-                    {getFilename(file.filename)}
-                  </h3>
-                  <div className="flex items-center gap-2">
-                    <span className="rounded-full bg-[#7AB]/20 px-2 py-1 text-xs text-[#7AB]">
+              <Card key={file.id} className="bg-card overflow-hidden">
+                <CardHeader className="border-b p-3 bg-muted/30">
+                  <div className="flex justify-between items-center">
+                    <CardTitle className="font-mono text-base">
+                      {getFilename(file.filename)}
+                    </CardTitle>
+                    <Badge variant="secondary" className="text-xs">
                       {file.language}
-                    </span>
+                    </Badge>
                   </div>
-                </div>
+                </CardHeader>
                 {file.content && (
-                  <div className="p-0">
-                    <pre className="m-0 overflow-x-auto p-4 text-sm">
+                  <CardContent className="p-0">
+                    <pre className="m-0 overflow-x-auto p-4 text-sm font-mono">
                       <code>
                         {highlightMatches(
                           getContentPreview(file.content),
@@ -182,47 +164,23 @@ export default function SearchFilesPage() {
                         )}
                       </code>
                     </pre>
-                  </div>
+                  </CardContent>
                 )}
-              </div>
+              </Card>
             ))}
           </div>
         ) : (
-          <div className="flex-1 flex flex-col items-center justify-center text-center p-8 text-[#888] border border-dashed border-[#666] rounded-lg">
-            <svg
-              className="h-16 w-16 mb-4 text-[#666]"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={1}
-                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-              />
-            </svg>
-            <p className="text-xl">
+          <Card className="flex flex-col items-center justify-center text-center p-8 bg-card/50 border-dashed">
+            <Search className="h-16 w-16 mb-4 text-muted-foreground/50" />
+            <p className="text-xl text-muted-foreground">
               No results found. Try a different search query.
             </p>
-          </div>
+          </Card>
         )
       ) : (
         <div className="mt-16 flex flex-col items-center justify-center text-center">
-          <svg
-            className="h-24 w-24 mb-6 text-[#444]"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={1}
-              d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-            />
-          </svg>
-          <p className="text-xl text-[#666]">
+          <Search className="h-24 w-24 mb-6 text-muted-foreground/30" />
+          <p className="text-xl text-muted-foreground/70">
             Enter a search term to find code files
           </p>
         </div>

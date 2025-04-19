@@ -4,6 +4,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { TRPCReactProvider } from "@/trpc/react";
 import { NuqsAdapter } from "nuqs/adapters/next/app";
+import { cn } from "@/lib/utils";
 
 export const metadata: Metadata = {
   title: "Code Search",
@@ -25,20 +26,22 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" className={`${geist.variable} ${geistMono.variable}`}>
-      <body className="bg-[#212121] text-[#EEE]">
+    <html lang="en" className={cn(geist.variable, geistMono.variable)}>
+      <body className="bg-background text-foreground">
         <div className="flex h-screen flex-col">
-          <header className="fixed left-0 right-0 top-0 z-10 bg-black/80 p-4">
+          <header className="fixed left-0 right-0 top-0 z-10 bg-background/80 backdrop-blur-sm border-b p-4">
             <div className="mx-auto flex max-w-7xl items-center justify-between">
               <h1 className="font-mono text-2xl font-bold">
-                ▲ code<span className="text-[#7AB]">search</span>
+                ▲ code<span className="text-primary">search</span>
               </h1>
             </div>
           </header>
           <div className="mt-16 flex h-[calc(100vh-4rem)] flex-1">
-            <aside className="w-1/4 min-w-64 bg-[#111] p-4">
+            <aside className="w-1/4 min-w-64 bg-muted/30 border-r p-4">
               <nav className="space-y-4">
-                <div className="pb-2 text-[#888]">FILTERS</div>
+                <div className="pb-2 text-muted-foreground font-medium">
+                  FILTERS
+                </div>
                 {/* Filters will be added here */}
               </nav>
             </aside>

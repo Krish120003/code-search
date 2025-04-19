@@ -1,0 +1,1 @@
+{"add-field": [{"name": "filename", "type": "text_general", "indexed": true, "stored": true}, {"name": "content", "type": "text_general", "indexed": true, "stored": true}, {"name": "language", "type": "string", "indexed": true, "stored": true}, {"name": "createdAt", "type": "pdate", "indexed": true, "stored": true}]}
