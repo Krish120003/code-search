@@ -8,6 +8,8 @@ const { queueName } = config.redis;
 
 // Processing set name - to track jobs in processing
 const processingSetName = `${queueName}-processing`;
+const failedQueueName = `${queueName}-failed`;
+const maxRetryCount = 3;
 
 /**
  * Get the next job from the queue
@@ -113,24 +115,44 @@ export async function markJobAsFailed(
 
     const job: Job = JSON.parse(jobData);
 
+    // Increment retry count
+    const retryCount = (job.retryCount || 0) + 1;
+
     // Update job status
     const updatedJob: Job = {
       ...job,
       status: "failed",
       processingEndedAt: new Date().toISOString(),
       error: error.message,
+      retryCount,
     };
 
     // Remove from processing set
     await redis.hdel(processingSetName, processingId);
 
-    // Add back to the queue for retry (at the beginning with LPUSH)
-    // You might want to implement a max retry count or dead letter queue
-    await redis.lpush(queueName, JSON.stringify({ ...job, status: "pending" }));
-
-    console.log(`Job ${processingId} marked as failed and returned to queue`);
+    if (retryCount > maxRetryCount) {
+      // Push to failed queue
+      await pushToFailedQueue(updatedJob);
+      console.log(`Job ${processingId} marked as failed and moved to failed queue`);
+    } else {
+      // Add back to the queue for retry (at the beginning with LPUSH)
+      await redis.lpush(queueName, JSON.stringify({ ...job, status: "pending" }));
+      console.log(`Job ${processingId} marked as failed and returned to queue`);
+    }
   } catch (error) {
     console.error("Error marking job as failed:", error);
+    throw error;
+  }
+}
+
+/**
+ * Push a job to the failed queue
+ */
+async function pushToFailedQueue(job: Job): Promise<void> {
+  try {
+    await redis.lpush(failedQueueName, JSON.stringify(job));
+  } catch (error) {
+    console.error("Error pushing job to failed queue:", error);
     throw error;
   }
 }
