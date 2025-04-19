@@ -167,3 +167,63 @@ pre::-webkit-scrollbar-thumb:hover {
     color: var(--grep-7);
   }
 }
+
+/* Add your custom styles after Tailwind classes */
+
+/* styles for the highlighted code snippets */
+.highlight-table {
+  width: 100%;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+    "Liberation Mono", "Courier New", monospace;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  border-collapse: collapse;
+}
+
+.highlight-table .lineno {
+  text-align: right;
+  padding: 0 0.5rem;
+  color: hsl(var(--muted-foreground));
+  background-color: hsl(var(--muted));
+  user-select: none;
+  border-right: 1px solid hsl(var(--border));
+  min-width: 3rem;
+}
+
+.highlight-table td {
+  vertical-align: top;
+}
+
+.highlight-table tr:hover {
+  background-color: hsl(var(--muted) / 0.3);
+}
+
+.highlight-table pre {
+  margin: 0;
+  padding: 0.25rem 0.75rem;
+  white-space: pre-wrap;
+  overflow-x: auto;
+}
+
+.highlight-table mark {
+  background-color: hsl(var(--primary) / 0.2);
+  color: inherit;
+  font-weight: 500;
+  border-radius: 0.125rem;
+  padding: 0.125rem 0;
+}
+
+.highlight-table .jump {
+  text-align: center;
+  padding: 0.25rem 0;
+  position: relative;
+  height: 1rem;
+}
+
+.highlight-table .jump::before {
+  content: "...";
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  color: hsl(var(--muted-foreground));
+}
