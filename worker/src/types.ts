@@ -1,4 +1,3 @@
-// Job related types
 export interface Job {
   url: string;
   createdAt: string;
@@ -7,11 +6,11 @@ export interface Job {
   processingEndedAt?: string;
   error?: string;
   processingId?: string;
+  retryCount?: number;
 }
 
 export type JobStatus = "pending" | "processing" | "completed" | "failed";
 
-// Git repo related types
 export interface RepoMetadata {
   url: string;
   owner: string;
@@ -19,7 +18,6 @@ export interface RepoMetadata {
   clonePath: string;
 }
 
-// File related types
 export interface CodeFile {
   id: string;
   repoUrl: string;
