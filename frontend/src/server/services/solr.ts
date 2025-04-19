@@ -31,7 +31,8 @@ export async function addFile(file: {
 // Escape Solr special characters
 function escapeSolrQuery(query: string): string {
   // Escape Solr special characters: + - && || ! ( ) { } [ ] ^ " ~ * ? : \ /
-  return query.replace(/([+\-&|!(){}[\]^"~*?:\\\/])/g, "\\$1");
+  // return query.replace(/([+\-&|!(){}[\]^"~*?:\\\/])/g, "\\$1");
+  return query;
 }
 
 // Process content to create highlighted snippets
