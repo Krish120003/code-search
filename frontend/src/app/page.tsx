@@ -7,11 +7,12 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Search, X, Github } from "lucide-react";
-import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table";
+import { Search, X, Github, FileCode, CaseSensitive } from "lucide-react";
+import { cn } from "@/lib/utils";
 
-function SearchComponent() {
+function SearchFilesComponent() {
   // Use URL state for the search query
   const [query, setQuery] = useQueryState("q");
   const [caseSensitive, setCaseSensitive] = useState(false);
@@ -29,7 +30,14 @@ function SearchComponent() {
   // Fetch search results whenever the query changes
   const { data: searchResults, isLoading: isSearching } =
     api.codeFiles.search.useQuery(
-      { query: query || "" },
+      {
+        query: query || "",
+        options: {
+          caseSensitive,
+          useRegex,
+          wholeWord,
+        },
+      },
       {
         enabled: (query || "").length > 0,
       }
@@ -37,78 +45,16 @@ function SearchComponent() {
 
   // Determine if we have an active search
   const hasSearched = (query || "").length > 0;
-  const filesToDisplay = hasSearched ? searchResults?.docs : [];
   const isLoading = hasSearched && isSearching;
-  const resultCount = filesToDisplay?.length ?? 0;
 
-  // Helper function to handle content that may be an array or string
-  const getContentPreview = (content: any): string => {
-    if (!content) return "";
-    const contentStr = Array.isArray(content) ? content[0] : content;
-    return typeof contentStr === "string"
-      ? contentStr
-      : "Content preview not available";
-  };
+  // Get facets for filtering UI
+  const langFacets = searchResults?.facets?.lang?.buckets || [];
+  const pathFacets = searchResults?.facets?.path?.buckets || [];
+  const repoFacets = searchResults?.facets?.repo?.buckets || [];
+  const totalResults = searchResults?.facets?.count || 0;
 
-  // Helper function to get filename (may be an array from Solr)
-  const getFilename = (filename: any): string => {
-    if (!filename) return "Unnamed file";
-    return Array.isArray(filename) ? filename[0] : filename;
-  };
-
-  // Helper function to get file parts to display path with breaks
-  const getFileParts = (filename: string): string[] => {
-    return filename.split(/[/\\]/g);
-  };
-
-  // Helper to get content lines for display
-  const getContentLines = (content: string): string[] => {
-    return content.split("\n").slice(0, 7); // Show up to 7 lines
-  };
-
-  // Helper function to highlight matches in text based on search options
-  const highlightMatches = (text: string, searchTerm: string) => {
-    if (!searchTerm.trim() || !text) return <>{text}</>;
-
-    try {
-      let regexPattern = searchTerm;
-
-      // Escape regex special chars if not using regex mode
-      if (!useRegex) {
-        regexPattern = searchTerm.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-      }
-
-      // Add word boundary for whole word search
-      if (wholeWord) {
-        regexPattern = `\\b${regexPattern}\\b`;
-      }
-
-      const regex = new RegExp(`(${regexPattern})`, caseSensitive ? "g" : "gi");
-
-      const parts = text.split(regex);
-
-      return (
-        <>
-          {parts.map((part, i) => {
-            const isMatch = i % 2 === 1; // Every odd-indexed part is a match
-            return isMatch ? (
-              <mark
-                key={i}
-                className="bg-primary/20 text-foreground font-normal"
-              >
-                {part}
-              </mark>
-            ) : (
-              part
-            );
-          })}
-        </>
-      );
-    } catch {
-      // In case of invalid regex
-      return <>{text}</>;
-    }
-  };
+  // Get search hits
+  const searchHits = searchResults?.hits?.hits || [];
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -200,39 +146,23 @@ function SearchComponent() {
                   xmlns="http://www.w3.org/2000/svg"
                   className="h-4 w-4"
                 >
-                  <path
-                    d="M4.66669 10C5.77126 10 6.66669 9.10457 6.66669 8C6.66669 6.89543 5.77126 6 4.66669 6C3.56212 6 2.66669 6.89543 2.66669 8C2.66669 9.10457 3.56212 10 4.66669 10Z"
+                  <rect
+                    x="3"
+                    y="3"
+                    width="10"
+                    height="10"
+                    rx="5"
                     stroke="currentColor"
                     strokeWidth="1.5"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
                   />
-                  <path
-                    d="M6.66669 6V10"
+                  <rect
+                    x="5"
+                    y="5"
+                    width="6"
+                    height="6"
+                    rx="3"
                     stroke="currentColor"
                     strokeWidth="1.5"
-                    strokeLinecap="square"
-                    strokeLinejoin="round"
-                  />
-                  <path
-                    d="M11.3333 10C12.4379 10 13.3333 9.10457 13.3333 8C13.3333 6.89543 12.4379 6 11.3333 6C10.2287 6 9.33331 6.89543 9.33331 8C9.33331 9.10457 10.2287 10 11.3333 10Z"
-                    stroke="currentColor"
-                    strokeWidth="1.5"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                  <path
-                    d="M9.33331 4.66675V10.0001"
-                    stroke="currentColor"
-                    strokeWidth="1.5"
-                    strokeLinecap="square"
-                    strokeLinejoin="round"
-                  />
-                  <path
-                    d="M1 11V13H15V11"
-                    stroke="currentColor"
-                    strokeWidth="1.5"
-                    strokeLinejoin="round"
                   />
                 </svg>
               </button>
@@ -244,7 +174,7 @@ function SearchComponent() {
                 aria-checked={useRegex}
                 onClick={() => setUseRegex(!useRegex)}
                 className="border border-transparent inline-flex items-center justify-center gap-2 rounded-md text-sm text-grep-9 font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 data-[state=on]:bg-grep-11 data-[state=on]:border-grep-6 data-[state=on]:text-foreground bg-transparent h-6 px-1 min-w-6"
-                aria-label="Use regular expression"
+                aria-label="Use regex"
                 tabIndex={-1}
               >
                 <svg
@@ -256,173 +186,190 @@ function SearchComponent() {
                   className="h-4 w-4"
                 >
                   <path
-                    d="M10.8867 2V8.66667"
-                    stroke="currentColor"
-                    strokeWidth="1.5"
-                    strokeLinecap="square"
-                    strokeLinejoin="round"
+                    fillRule="evenodd"
+                    clipRule="evenodd"
+                    d="M10.1301 5.33417L10.112 5.31999L10.1301 5.33781C10.9636 6.24371 11.3971 7.41351 11.3529 8.61253C11.3086 9.81154 10.7904 10.9457 9.89695 11.7924C9.00349 12.6392 7.80333 13.1302 6.55521 13.1689C5.30709 13.2075 4.07979 12.7911 3.13553 11.9999C2.19128 11.2087 1.59546 10.0979 1.46984 8.89791C1.34422 7.69788 1.69812 6.50339 2.45931 5.5736C3.2205 4.64381 4.33258 4.05105 5.55116 3.92091C6.76975 3.79077 7.99048 4.13252 8.96994 4.86417L8.98262 4.87442L9.41862 4.36299L9.42009 4.36133L10.1301 5.33417ZM5.70006 5.42433C5.00536 5.42433 4.33849 5.69468 3.84462 6.17542C3.35076 6.65617 3.07315 7.30518 3.07315 7.98117C3.07315 8.65716 3.35076 9.30616 3.84462 9.78691C4.33849 10.2677 5.00536 10.538 5.70006 10.538C6.39476 10.538 7.06163 10.2677 7.5555 9.78691C8.04936 9.30616 8.32697 8.65716 8.32697 7.98117C8.32697 7.30518 8.04936 6.65617 7.5555 6.17542C7.06163 5.69468 6.39476 5.42433 5.70006 5.42433Z"
+                    fill="currentColor"
                   />
                   <path
-                    d="M8 3.66675L13.7733 7.00008"
-                    stroke="currentColor"
-                    strokeWidth="1.5"
-                    strokeLinecap="square"
-                    strokeLinejoin="round"
+                    d="M14.2856 3.46231C14.3801 3.38328 14.3974 3.25135 14.3246 3.15162C14.2518 3.05188 14.1198 3.02926 14.0253 3.10829L9.87109 6.32465C9.77664 6.40368 9.75935 6.53561 9.83215 6.63534C9.90495 6.73508 10.0369 6.7577 10.1314 6.67867L14.2856 3.46231Z"
+                    fill="currentColor"
                   />
                   <path
-                    d="M8 7.00008L13.7733 3.66675"
-                    stroke="currentColor"
-                    strokeWidth="1.5"
-                    strokeLinecap="square"
-                    strokeLinejoin="round"
-                  />
-                  <path
-                    d="M2.22331 7.00008C2.22331 7.00008 4.66665 4.55566 4.66665 3.66675C4.66665 2.77783 3.9553 2.06641 3.06665 2.06641C2.17801 2.06641 1.46631 2.77783 1.46631 3.66675"
-                    stroke="currentColor"
-                    strokeWidth="1.5"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                  <path
-                    d="M1.33334 7.00008C1.33334 7.00008 3.77668 9.4445 3.77668 10.3334C3.77668 11.2223 3.06534 11.9338 2.17669 11.9338C1.28805 11.9338 0.576343 11.2223 0.576343 10.3334"
-                    stroke="currentColor"
-                    strokeWidth="1.5"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                  <path
-                    d="M2.22331 13.9999H5.33334"
-                    stroke="currentColor"
-                    strokeWidth="1.5"
-                    strokeLinecap="round"
+                    d="M14.2856 12.5001C14.3801 12.5791 14.3974 12.711 14.3246 12.8108C14.2518 12.9105 14.1198 12.9331 14.0253 12.8541L9.87109 9.63774C9.77664 9.55871 9.75935 9.42678 9.83215 9.32704C9.90495 9.22731 10.0369 9.20469 10.1314 9.28372L14.2856 12.5001Z"
+                    fill="currentColor"
                   />
                 </svg>
               </button>
             </div>
-          </div>
 
-          {query && (
-            <button
-              type="button"
-              className="absolute right-[88px] top-1/2 -translate-y-1/2 rounded-full h-5 w-5 inline-flex items-center justify-center text-grep-7 hover:text-grep-10 hover:bg-grep-3"
-              onClick={() => setQuery(null)}
-            >
-              <X className="h-3 w-3" />
-            </button>
-          )}
+            {query && (
+              <button
+                type="button"
+                onClick={() => setQuery(null)}
+                className="ml-1 rounded-md text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                aria-label="Clear search"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            )}
+          </div>
         </div>
       </div>
 
-      {/* Results counter - only show when there's a query */}
+      {/* Results area with facets and hits */}
       {hasSearched && (
-        <div className="mb-4 text-muted-foreground">
-          {isLoading ? (
-            <span>Searching...</span>
-          ) : (
-            <span>
-              {resultCount} {resultCount === 1 ? "result" : "results"}
-              {` for "${query}"`}
-            </span>
-          )}
-        </div>
-      )}
+        <div className="mt-6 grid grid-cols-12 gap-6">
+          {/* Facets sidebar */}
+          <div className="col-span-3">
+            <div className="rounded-lg border border-border p-4">
+              <h2 className="mb-4 font-medium">Filters</h2>
 
-      {/* Results */}
-      {hasSearched ? (
-        isLoading ? (
-          <div className="space-y-4">
-            <Skeleton className="h-[150px] w-full rounded-lg" />
-            <Skeleton className="h-[150px] w-full rounded-lg" />
-            <Skeleton className="h-[150px] w-full rounded-lg" />
-          </div>
-        ) : filesToDisplay && filesToDisplay.length > 0 ? (
-          <div className="space-y-6 overflow-y-auto pb-8">
-            {filesToDisplay.map((file: any) => {
-              const content = getContentPreview(file.content);
-              const filename = getFilename(file.filename);
-              const fileParts = getFileParts(filename);
-              const contentLines = getContentLines(content);
-
-              return (
-                <div
-                  key={file.id}
-                  className="flex w-full flex-col overflow-hidden rounded-md border border-border"
-                >
-                  {/* Result Header */}
-                  <div className="flex min-h-10 w-full items-center justify-between border-b bg-card/50 px-4">
-                    <div className="flex flex-col py-1 sm:flex-row sm:gap-2">
-                      <div className="flex shrink-0 flex-row items-center gap-2">
-                        <Github className="h-4 w-4" />
-                        <span className="text-sm font-medium">
-                          {file.language}
-                        </span>
-                      </div>
-                      <span className="text-sm text-muted-foreground">
-                        {fileParts.map((part, i) => (
-                          <span key={i}>
-                            {i > 0 && <wbr />}
-                            {part}
-                            {i < fileParts.length - 1 && "/"}
-                          </span>
-                        ))}
-                      </span>
-                    </div>
-                    <div className="hidden text-nowrap text-xs text-muted-foreground md:block">
-                      {contentLines.length} lines
-                    </div>
-                  </div>
-
-                  {/* Code Content */}
-                  <div className="bg-background/50">
-                    <Table>
-                      <TableBody>
-                        {contentLines.map((line, index) => (
-                          <TableRow key={index} className="hover:bg-muted/30">
-                            <TableCell className="p-0 w-14 text-right border-r border-card/30 text-muted-foreground">
-                              <div className="px-2 py-1 text-xs tabular-nums">
-                                {index + 1}
-                              </div>
-                            </TableCell>
-                            <TableCell className="px-4 py-1">
-                              <div className="font-mono text-sm whitespace-pre-wrap">
-                                {query ? highlightMatches(line, query) : line}
-                              </div>
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  </div>
+              {/* Language facets */}
+              {langFacets.length > 0 && (
+                <div className="mb-4">
+                  <h3 className="mb-2 text-sm font-medium text-muted-foreground">
+                    Languages
+                  </h3>
+                  <ul className="space-y-1">
+                    {langFacets.map((facet) => (
+                      <li
+                        key={facet.val}
+                        className="flex items-center justify-between"
+                      >
+                        <span className="text-sm">{facet.val}</span>
+                        <Badge variant="outline">
+                          {facet.count.toLocaleString()}
+                        </Badge>
+                      </li>
+                    ))}
+                  </ul>
                 </div>
-              );
-            })}
+              )}
+
+              {/* Path facets */}
+              {pathFacets.length > 0 && (
+                <div className="mb-4">
+                  <h3 className="mb-2 text-sm font-medium text-muted-foreground">
+                    Paths
+                  </h3>
+                  <ul className="space-y-1">
+                    {pathFacets.map((facet) => (
+                      <li
+                        key={facet.val}
+                        className="flex items-center justify-between"
+                      >
+                        <span className="text-sm">{facet.val}</span>
+                        <Badge variant="outline">
+                          {facet.count.toLocaleString()}
+                        </Badge>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {/* Repository facets */}
+              {repoFacets.length > 0 && (
+                <div>
+                  <h3 className="mb-2 text-sm font-medium text-muted-foreground">
+                    Repositories
+                  </h3>
+                  <ul className="space-y-1">
+                    {repoFacets.map((facet) => (
+                      <li
+                        key={facet.val}
+                        className="flex items-center justify-between"
+                      >
+                        <span className="text-sm">{facet.val}</span>
+                        <Badge variant="outline">
+                          {facet.count.toLocaleString()}
+                        </Badge>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
           </div>
-        ) : (
-          <Card className="flex flex-col items-center justify-center text-center p-8 bg-card/50 border-dashed">
-            <Search className="h-16 w-16 mb-4 text-muted-foreground/50" />
-            <p className="text-xl text-muted-foreground">
-              No results found. Try a different search query.
-            </p>
-          </Card>
-        )
-      ) : (
-        <div className="mt-16 flex flex-col items-center justify-center text-center">
-          <Search className="h-24 w-24 mb-6 text-muted-foreground/30" />
-          <p className="text-xl text-muted-foreground/70">
-            Enter a search term to find code files
-          </p>
+
+          {/* Search results */}
+          <div className="col-span-9">
+            {isLoading ? (
+              <div className="space-y-4">
+                {[1, 2, 3].map((i) => (
+                  <Card key={i} className="p-4">
+                    <div className="mb-3 flex items-center gap-2">
+                      <Skeleton className="h-4 w-32" />
+                      <Skeleton className="h-4 w-20" />
+                    </div>
+                    <Skeleton className="mb-2 h-6 w-3/4" />
+                    <div className="space-y-2">
+                      <Skeleton className="h-4 w-full" />
+                      <Skeleton className="h-4 w-full" />
+                      <Skeleton className="h-4 w-2/3" />
+                    </div>
+                  </Card>
+                ))}
+              </div>
+            ) : searchHits.length === 0 && hasSearched ? (
+              <div className="rounded-lg border border-border p-6 text-center">
+                <p className="text-lg font-medium">No results found</p>
+                <p className="text-muted-foreground">
+                  Try adjusting your search term or filters
+                </p>
+              </div>
+            ) : (
+              <>
+                <div className="mb-4">
+                  <p className="text-sm text-muted-foreground">
+                    Found {totalResults.toLocaleString()} results for "{query}"
+                  </p>
+                </div>
+                <div className="space-y-6">
+                  {searchHits.map((hit) => (
+                    <Card key={hit.id.raw} className="overflow-hidden">
+                      <div className="border-b border-border bg-muted/50 px-4 py-2">
+                        <div className="flex items-center gap-2">
+                          <FileCode className="h-4 w-4 text-muted-foreground" />
+                          <span className="font-medium">{hit.path.raw}</span>
+                          <Badge variant="outline">
+                            {hit.total_matches.raw} matches
+                          </Badge>
+                        </div>
+                        <div className="mt-1 flex items-center gap-2 text-xs text-muted-foreground">
+                          <Github className="h-3 w-3" />
+                          <span>{hit.repo.raw}</span>
+                          <span>•</span>
+                          <span>Branch: {hit.branch.raw}</span>
+                        </div>
+                      </div>
+
+                      {/* Code snippet with syntax highlighting */}
+                      <div className="max-h-96 overflow-auto p-0">
+                        <div
+                          className="code-snippet text-sm"
+                          dangerouslySetInnerHTML={{
+                            __html: hit.content.snippet,
+                          }}
+                        />
+                      </div>
+                    </Card>
+                  ))}
+                </div>
+              </>
+            )}
+          </div>
         </div>
       )}
     </div>
   );
 }
 
-export default function HomePage() {
+export default function SearchFilesPage() {
   return (
-    <Suspense
-      fallback={<div className="p-8 text-center">Loading search...</div>}
-    >
-      <SearchComponent />
+    <Suspense fallback={<div>Loading...</div>}>
+      <SearchFilesComponent />
     </Suspense>
   );
 }
