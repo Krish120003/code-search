@@ -34,109 +34,125 @@ function escapeSolrQuery(query: string): string {
   return query.replace(/([+\-&|!(){}[\]^"~*?:\\\/])/g, "\\$1");
 }
 
-// Process the content to create line-numbered snippets with highlighting
+// Process content to create highlighted snippets
 function processContentHighlighting(
   content: string,
   query: string
-): { snippet: string; lineMatches: number[] } {
-  if (!content) return { snippet: "", lineMatches: [] };
-
+): { snippet: string; lineMatches: string[] } {
+  // Split content into lines
   const lines = content.split("\n");
-  const lineMatches: number[] = [];
-  const regex = new RegExp(query, "gi");
+  const lineMatches: string[] = [];
 
-  // Find all lines with matches
-  lines.forEach((line, index) => {
-    if (regex.test(line)) {
-      lineMatches.push(index + 1); // 1-indexed line numbers
-    }
-    // Reset regex state
-    regex.lastIndex = 0;
-  });
+  // Simple case-insensitive matching for demo
+  const queryLower = query.toLowerCase();
 
-  // Group consecutive line matches
-  const lineGroups: Array<{ start: number; end: number }> = [];
-  let currentGroup: { start: number; end: number } | null = null;
-
-  lineMatches.forEach((lineNum) => {
-    if (!currentGroup) {
-      currentGroup = { start: lineNum, end: lineNum };
-    } else if (lineNum === currentGroup.end + 1) {
-      currentGroup.end = lineNum;
-    } else {
-      lineGroups.push(currentGroup!);
-      currentGroup = { start: lineNum, end: lineNum };
+  // Find lines that match the query
+  lines.forEach((line, i) => {
+    if (line.toLowerCase().includes(queryLower)) {
+      lineMatches.push(`${i + 1}: ${line}`);
     }
   });
 
-  if (currentGroup) {
-    lineGroups.push(currentGroup);
+  // Create a snippet with line numbers and highlighting
+  // Take up to 5 matching lines
+  const matchesToShow = lineMatches.slice(0, 5);
+
+  // Join the matches into a single string with line breaks
+  const snippet =
+    matchesToShow.length > 0
+      ? matchesToShow.join("\n")
+      : "No matching lines found";
+
+  return { snippet, lineMatches };
+}
+
+// Get all files from the index
+export async function getAllFiles(): Promise<any> {
+  try {
+    const solrQuery = client.query().q("*:*");
+    const result = await client.search(solrQuery);
+    return result.response;
+  } catch (error) {
+    console.error("Error getting all files:", error);
+    throw new Error("Failed to get files");
   }
-
-  // Generate HTML snippet with line numbers and highlighting
-  let snippetHtml = '<table class="highlight-table">';
-  const context = 2; // Show N lines before and after matches
-
-  lineGroups.forEach((group, idx) => {
-    // Add jump indicator if there's a gap between groups
-    if (
-      idx > 0 &&
-      lineGroups[idx - 1].end + context * 2 < group.start - context
-    ) {
-      snippetHtml += '<tr><td><div class="jump"></div></td></tr>';
-    }
-
-    // Show lines with context
-    const startLine = Math.max(1, group.start - context);
-    const endLine = Math.min(lines.length, group.end + context);
-
-    for (let i = startLine; i <= endLine; i++) {
-      const line = lines[i - 1]; // 0-indexed array
-      const isMatch = i >= group.start && i <= group.end;
-
-      // Create HTML for this line with highlighting
-      snippetHtml += `<tr data-line="${i}"><td><div class="lineno">${i}</div></td><td><div class="highlight"><pre>`;
-
-      if (isMatch && line) {
-        // Highlight the search term
-        const highlightedLine = line.replace(
-          regex,
-          (match) => `<mark>${match}</mark>`
-        );
-        snippetHtml += highlightedLine;
-      } else {
-        snippetHtml += line;
-      }
-
-      snippetHtml += "</pre></div></td></tr>";
-    }
-  });
-
-  snippetHtml += "</table>";
-
-  return {
-    snippet: snippetHtml,
-    lineMatches,
-  };
 }
 
 // Search for files with highlighted snippets
-export async function searchFiles(query: string): Promise<any> {
+export async function searchFiles(
+  query: string,
+  options: {
+    caseSensitive?: boolean;
+    useRegex?: boolean;
+    wholeWord?: boolean;
+    limit?: number;
+    offset?: number;
+    filter?: {
+      language?: string[];
+      path?: string[];
+      repo?: string[];
+    };
+  } = {}
+): Promise<any> {
   try {
     // Escape special characters
     const escapedQuery = escapeSolrQuery(query);
 
-    // Format the query to search in content and filename fields
-    const solrSearchQuery = `content:*${escapedQuery}* OR filename:*${escapedQuery}*`;
+    // Format the query to search in content_t and filename_s fields (matching the worker's field names)
+    let solrSearchQuery = `content_t:*${escapedQuery}* OR filename_s:*${escapedQuery}*`;
+
+    // Apply filters if they exist
+    const filterQueries = [];
+
+    // Add language filter
+    if (options.filter?.language && options.filter.language.length > 0) {
+      const languageQuery = options.filter.language
+        .map((lang) => `language_s:"${lang}"`)
+        .join(" OR ");
+      filterQueries.push(`(${languageQuery})`);
+    }
+
+    // Add path filter
+    if (options.filter?.path && options.filter.path.length > 0) {
+      const pathQuery = options.filter.path
+        .map((path) => `filepath_s:${path}*`)
+        .join(" OR ");
+      filterQueries.push(`(${pathQuery})`);
+    }
+
+    // Add repo filter
+    if (options.filter?.repo && options.filter.repo.length > 0) {
+      const repoQuery = options.filter.repo
+        .map((repo) => `repo_name_s:"${repo}"`)
+        .join(" OR ");
+      filterQueries.push(`(${repoQuery})`);
+    }
 
     console.log("Executing Solr query:", solrSearchQuery);
+    console.log("Filter queries:", filterQueries);
 
     const solrQuery = client
       .query()
       .q(solrSearchQuery)
-      .fl(["id", "filename", "content", "language", "createdAt"])
-      .start(0)
-      .rows(20);
+      .fl([
+        "id",
+        "filename_s",
+        "filepath_s",
+        "content_t",
+        "language_s",
+        "repo_url_s",
+        "repo_owner_s",
+        "repo_name_s",
+        "created_at_dt",
+      ])
+      .start(options.offset || 0)
+      .rows(options.limit || 20);
+
+    // Add filter queries
+    if (filterQueries.length > 0) {
+      // @ts-ignore - Cast the solrQuery to any type to avoid TypeScript errors
+      (solrQuery as any).set("fq", filterQueries);
+    }
 
     const result = await client.search(solrQuery);
     console.log("Solr search results:", result.response);
@@ -152,31 +168,38 @@ export async function searchFiles(query: string): Promise<any> {
       // Process each document to create highlighted snippets
       const processedDocs = result.response.docs.map((doc: any) => {
         // Add to facets
-        if (doc.language) {
-          const lang = Array.isArray(doc.language)
-            ? doc.language[0]
-            : doc.language;
+        if (doc.language_s) {
+          const lang = Array.isArray(doc.language_s)
+            ? doc.language_s[0]
+            : doc.language_s;
           languageFacets[lang] = (languageFacets[lang] || 0) + 1;
         }
 
-        if (doc.filename) {
-          const filename = Array.isArray(doc.filename)
-            ? doc.filename[0]
-            : doc.filename;
-          // Extract path parts for path facet
-          const parts = filename.split("/");
+        // Use filepath_s for path facets
+        if (doc.filepath_s) {
+          const filepath = Array.isArray(doc.filepath_s)
+            ? doc.filepath_s[0]
+            : doc.filepath_s;
+
+          // Extract directory part for path facet
+          const parts = filepath.split("/");
           if (parts.length > 1) {
-            const pathPart = parts[0] + "/";
-            pathFacets[pathPart] = (pathFacets[pathPart] || 0) + 1;
+            const dirPart = parts[0] + "/";
+            pathFacets[dirPart] = (pathFacets[dirPart] || 0) + 1;
           }
 
-          // Use first part as "repo" for demo purposes
-          if (parts.length > 0) {
-            const repo = parts[0];
+          // Use repo_name_s as repo for facet
+          if (doc.repo_name_s) {
+            const repo = Array.isArray(doc.repo_name_s)
+              ? doc.repo_name_s[0]
+              : doc.repo_name_s;
+
             if (!repoFacets[repo]) {
               repoFacets[repo] = {
                 count: 0,
-                owner_id: Math.floor(Math.random() * 10000000).toString(),
+                owner_id:
+                  doc.repo_owner_s ||
+                  Math.floor(Math.random() * 10000000).toString(),
               };
             }
             repoFacets[repo].count += 1;
@@ -184,9 +207,9 @@ export async function searchFiles(query: string): Promise<any> {
         }
 
         // Create enhanced snippet with highlighting
-        const content = Array.isArray(doc.content)
-          ? doc.content[0]
-          : doc.content;
+        const content = Array.isArray(doc.content_t)
+          ? doc.content_t[0]
+          : doc.content_t;
         const { snippet, lineMatches } = processContentHighlighting(
           content,
           query
@@ -197,19 +220,22 @@ export async function searchFiles(query: string): Promise<any> {
             raw: doc.id,
           },
           path: {
-            raw: Array.isArray(doc.filename) ? doc.filename[0] : doc.filename,
+            raw: Array.isArray(doc.filepath_s)
+              ? doc.filepath_s[0]
+              : doc.filepath_s || "",
           },
           repo: {
-            raw:
-              Array.isArray(doc.filename) && doc.filename[0].includes("/")
-                ? doc.filename[0].split("/")[0]
-                : "unknown",
+            raw: Array.isArray(doc.repo_name_s)
+              ? doc.repo_name_s[0]
+              : doc.repo_name_s || "unknown",
           },
           branch: {
             raw: "main",
           },
           owner_id: {
-            raw: Math.floor(Math.random() * 10000000).toString(),
+            raw: Array.isArray(doc.repo_owner_s)
+              ? doc.repo_owner_s[0]
+              : doc.repo_owner_s || "",
           },
           content: {
             snippet,
@@ -262,24 +288,5 @@ export async function searchFiles(query: string): Promise<any> {
   } catch (error) {
     console.error("Error searching files:", error);
     throw new Error("Failed to search files");
-  }
-}
-
-// Get all files
-export async function getAllFiles(): Promise<any> {
-  try {
-    const solrQuery = client
-      .query()
-      .q("*:*")
-      .fl(["id", "filename", "language", "createdAt"])
-      .sort({ createdAt: "desc" })
-      .start(0)
-      .rows(100);
-
-    const result = await client.search(solrQuery);
-    return result.response;
-  } catch (error) {
-    console.error("Error fetching all files:", error);
-    throw new Error("Failed to fetch files");
   }
 }

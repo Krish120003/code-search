@@ -104,7 +104,7 @@ export const codeFilesRouter = createTRPCRouter({
     )
     .output(searchResponseSchema)
     .query(async ({ input }) => {
-      const results = await searchFiles(input.query);
+      const results = await searchFiles(input.query, input.options);
       return results;
     }),
 

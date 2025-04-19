@@ -38,9 +38,6 @@ export default function RootLayout({
             </div>
           </header>
           <div className="mt-16 flex h-[calc(100vh-4rem)] flex-1">
-            <aside className="w-1/4 min-w-64 bg-muted/30 border-r overflow-y-auto">
-              <FilterPanel />
-            </aside>
             <main className="flex-1 overflow-y-auto p-6">
               <NuqsAdapter>
                 <TRPCReactProvider>{children}</TRPCReactProvider>

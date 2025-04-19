@@ -356,7 +356,9 @@ export async function cloneRepository(url: string): Promise<RepoMetadata> {
     console.log(`Cloning repository ${url} to ${clonePath}...`);
 
     const git = simpleGit();
-    await git.clone(url, clonePath);
+    // Use --depth=1 for a shallow clone (faster and takes less space)
+    console.log("Using shallow clone (depth=1) for faster processing");
+    await git.clone(url, clonePath, ["--depth=1"]);
 
     console.log(`Repository ${url} cloned successfully`);
 

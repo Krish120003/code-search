@@ -33,7 +33,11 @@ export async function addCodeFile(file: CodeFile): Promise<void> {
     await client.add(solrDoc);
     await client.commit();
 
-    console.log(`Added file ${file.filepath} to Solr index`);
+    console.log(
+      `Added file to Solr: ${file.filepath} (${file.language}, ${formatBytes(
+        file.size
+      )})`
+    );
   } catch (error) {
     console.error("Error adding file to Solr:", error);
     throw error;
@@ -48,6 +52,15 @@ export async function addCodeFilesBatch(files: CodeFile[]): Promise<void> {
     if (files.length === 0) {
       return;
     }
+
+    // Log each file before adding to batch
+    files.forEach((file) => {
+      console.log(
+        `Adding to batch: ${file.filepath} (${file.language}, ${formatBytes(
+          file.size
+        )})`
+      );
+    });
 
     // Map our CodeFile array to Solr document structure
     const solrDocs = files.map((file) => ({
@@ -67,7 +80,7 @@ export async function addCodeFilesBatch(files: CodeFile[]): Promise<void> {
     await client.add(solrDocs);
     await client.commit();
 
-    console.log(`Added ${files.length} files to Solr index in batch`);
+    console.log(`Batch completed: Added ${files.length} files to Solr index`);
   } catch (error) {
     console.error("Error adding files to Solr in batch:", error);
     throw error;
@@ -119,6 +132,21 @@ export async function searchCode(
     console.error("Error searching code in Solr:", error);
     throw error;
   }
+}
+
+/**
+ * Format bytes to a human-readable string
+ */
+function formatBytes(bytes: number, decimals = 2): string {
+  if (bytes === 0) return "0 Bytes";
+
+  const k = 1024;
+  const dm = decimals < 0 ? 0 : decimals;
+  const sizes = ["Bytes", "KB", "MB", "GB", "TB"];
+
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + " " + sizes[i];
 }
 
 // Export the Solr client for direct use if needed
