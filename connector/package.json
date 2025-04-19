@@ -1,0 +1,29 @@
+{
+  "name": "solr-connector",
+  "version": "1.0.0",
+  "description": "Connector to interact with Apache Solr",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "tsc -w & nodemon dist/index.js",
+    "test": "jest"
+  },
+  "keywords": [
+    "solr",
+    "connector"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "solr-client": "0.10.0-rc10"
+  },
+  "devDependencies": {
+    "@types/jest": "^29.5.14",
+    "@types/node": "^20.11.19",
+    "jest": "^29.7.0",
+    "nodemon": "^3.0.3",
+    "ts-jest": "^29.3.2",
+    "typescript": "^5.3.3"
+  }
+}
