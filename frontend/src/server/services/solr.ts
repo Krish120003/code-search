@@ -129,8 +129,8 @@ export async function searchFiles(
       filterQueries.push(`(${repoQuery})`);
     }
 
-    console.log("Executing Solr query:", solrSearchQuery);
-    console.log("Filter queries:", filterQueries);
+    // console.log("Executing Solr query:", solrSearchQuery);
+    // console.log("Filter queries:", filterQueries);
 
     const solrQuery = client
       .query()
@@ -156,7 +156,7 @@ export async function searchFiles(
     }
 
     const result = await client.search(solrQuery);
-    console.log("Solr search results:", result.response);
+    // console.log("Solr se`arch results:", result.response);
 
     // Process results to add highlighting
     if (result.response && result.response.docs) {

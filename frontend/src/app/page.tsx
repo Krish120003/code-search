@@ -118,6 +118,12 @@ function SearchFilesComponent() {
         <h1 className="text-2xl font-bold">Code Search</h1>
         <div className="flex gap-2">
           <Button asChild variant="outline">
+            <Link href="/benchmark">
+              <Search className="h-4 w-4 mr-1" />
+              Benchmark
+            </Link>
+          </Button>
+          <Button asChild variant="outline">
             <Link href="/ingest">
               <Github className="h-4 w-4 mr-1" />
               Add Repository
