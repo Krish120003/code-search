@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, Suspense } from "react";
 import { useQueryState } from "nuqs";
 import { api } from "@/trpc/react";
 import Link from "next/link";
@@ -13,7 +13,7 @@ import { Search, X, Github, FileCode, CaseSensitive } from "lucide-react";
 import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table";
 import { cn } from "@/lib/utils";
 
-export default function SearchFilesPage() {
+function SearchFilesComponent() {
   // Use URL state for the search query
   const [query, setQuery] = useQueryState("q");
   const [caseSensitive, setCaseSensitive] = useState(false);
@@ -416,5 +416,15 @@ export default function SearchFilesPage() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function SearchFilesPage() {
+  return (
+    <Suspense
+      fallback={<div className="p-8 text-center">Loading search...</div>}
+    >
+      <SearchFilesComponent />
+    </Suspense>
   );
 }
