@@ -22,11 +22,31 @@ services:
     networks:
       - app_net
 
+  worker:
+    build: ./worker
+    container_name: codesearch_worker
+    depends_on:
+      - redis
+      - solr
+    restart: unless-stopped
+    environment:
+      - REDIS_URL=redis://redis:6379
+      - SOLR_HOST=solr
+      - SOLR_PORT=8983
+      - SOLR_CORE=code
+      - SOLR_PATH=/solr
+    volumes:
+      - worker_tmp:/tmp
+    networks:
+      - app_net
+
 volumes:
   solr_data:
     name: solr_data
   redis_data:
     name: redis_data
+  worker_tmp:
+    name: worker_tmp
 
 networks:
   app_net:
