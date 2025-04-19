@@ -1,19 +1,19 @@
 version: "3.8"
 services:
   solr:
-    image: solr:9 # You can specify a different Solr version if needed
+    image: solr:9
     container_name: solr
     ports:
       - "8983:8983"
     volumes:
       - solr_data:/var/solr
-    # Optional: Command to create a core on startup
-    # command: solr-precreate mycore
+    command: solr-precreate code
     networks:
       - solr_net
 
 volumes:
   solr_data:
+    name: solr_data
 
 networks:
   solr_net:
