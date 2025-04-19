@@ -5,6 +5,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import { TRPCReactProvider } from "@/trpc/react";
 import { NuqsAdapter } from "nuqs/adapters/next/app";
 import { cn } from "@/lib/utils";
+import { FilterPanel } from "@/components/filter-panel";
 
 export const metadata: Metadata = {
   title: "Code Search",
@@ -37,13 +38,8 @@ export default function RootLayout({
             </div>
           </header>
           <div className="mt-16 flex h-[calc(100vh-4rem)] flex-1">
-            <aside className="w-1/4 min-w-64 bg-muted/30 border-r p-4">
-              <nav className="space-y-4">
-                <div className="pb-2 text-muted-foreground font-medium">
-                  FILTERS
-                </div>
-                {/* Filters will be added here */}
-              </nav>
+            <aside className="w-1/4 min-w-64 bg-muted/30 border-r overflow-y-auto">
+              <FilterPanel />
             </aside>
             <main className="flex-1 overflow-y-auto p-6">
               <NuqsAdapter>

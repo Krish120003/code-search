@@ -6,16 +6,12 @@ import { api } from "@/trpc/react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardContent,
-  CardFooter,
-} from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Search, X } from "lucide-react";
+import { Search, X, Github, FileCode } from "lucide-react";
+import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table";
+import { cn } from "@/lib/utils";
 
 export default function SearchFilesPage() {
   // Use URL state for the search query
@@ -49,7 +45,7 @@ export default function SearchFilesPage() {
     if (!content) return "";
     const contentStr = Array.isArray(content) ? content[0] : content;
     return typeof contentStr === "string"
-      ? contentStr.substring(0, 200) + "..."
+      ? contentStr
       : "Content preview not available";
   };
 
@@ -59,24 +55,43 @@ export default function SearchFilesPage() {
     return Array.isArray(filename) ? filename[0] : filename;
   };
 
+  // Helper function to get file parts to display path with breaks
+  const getFileParts = (filename: string): string[] => {
+    return filename.split(/[/\\]/g);
+  };
+
+  // Helper to get content lines for display
+  const getContentLines = (content: string): string[] => {
+    return content.split("\n").slice(0, 7); // Show up to 7 lines
+  };
+
   // Helper function to highlight matches in text
   const highlightMatches = (text: string, searchTerm: string) => {
-    if (!searchTerm.trim() || !text) return text;
+    if (!searchTerm.trim() || !text) return <>{text}</>;
 
     try {
-      const parts = text.split(new RegExp(`(${searchTerm})`, "gi"));
-      return parts.map((part, i) =>
-        part.toLowerCase() === searchTerm.toLowerCase() ? (
-          <mark key={i} className="bg-primary/20 text-foreground">
-            {part}
-          </mark>
-        ) : (
-          part
-        )
+      const regex = new RegExp(`(${searchTerm})`, "gi");
+      const parts = text.split(regex);
+
+      return (
+        <>
+          {parts.map((part, i) =>
+            part.toLowerCase() === searchTerm.toLowerCase() ? (
+              <mark
+                key={i}
+                className="bg-primary/20 text-foreground font-normal"
+              >
+                {part}
+              </mark>
+            ) : (
+              part
+            )
+          )}
+        </>
       );
     } catch {
       // In case of invalid regex
-      return text;
+      return <>{text}</>;
     }
   };
 
@@ -101,13 +116,13 @@ export default function SearchFilesPage() {
               onChange={(e) => setQuery(e.target.value || null)}
               placeholder="Search code..."
               aria-label="Search code"
-              className="pl-9 bg-background"
+              className="pl-9 bg-background h-11 text-base"
             />
             {query && (
               <Button
                 variant="ghost"
                 size="icon"
-                className="absolute right-1 top-1 h-7 w-7 rounded-full"
+                className="absolute right-1 top-1 h-8 w-8 rounded-full"
                 onClick={() => setQuery(null)}
                 aria-label="Clear search"
               >
@@ -142,32 +157,65 @@ export default function SearchFilesPage() {
           </div>
         ) : filesToDisplay && filesToDisplay.length > 0 ? (
           <div className="space-y-6 overflow-y-auto pb-8">
-            {filesToDisplay.map((file: any) => (
-              <Card key={file.id} className="bg-card overflow-hidden">
-                <CardHeader className="border-b p-3 bg-muted/30">
-                  <div className="flex justify-between items-center">
-                    <CardTitle className="font-mono text-base">
-                      {getFilename(file.filename)}
-                    </CardTitle>
-                    <Badge variant="secondary" className="text-xs">
-                      {file.language}
-                    </Badge>
+            {filesToDisplay.map((file: any) => {
+              const content = getContentPreview(file.content);
+              const filename = getFilename(file.filename);
+              const fileParts = getFileParts(filename);
+              const contentLines = getContentLines(content);
+
+              return (
+                <div
+                  key={file.id}
+                  className="flex w-full flex-col overflow-hidden rounded-md border border-border"
+                >
+                  {/* Result Header */}
+                  <div className="flex min-h-10 w-full items-center justify-between border-b bg-card/50 px-4">
+                    <div className="flex flex-col py-1 sm:flex-row sm:gap-2">
+                      <div className="flex shrink-0 flex-row items-center gap-2">
+                        <Github className="h-4 w-4" />
+                        <span className="text-sm font-medium">
+                          {file.language}
+                        </span>
+                      </div>
+                      <span className="text-sm text-muted-foreground">
+                        {fileParts.map((part, i) => (
+                          <span key={i}>
+                            {i > 0 && <wbr />}
+                            {part}
+                            {i < fileParts.length - 1 && "/"}
+                          </span>
+                        ))}
+                      </span>
+                    </div>
+                    <div className="hidden text-nowrap text-xs text-muted-foreground md:block">
+                      {contentLines.length} lines
+                    </div>
                   </div>
-                </CardHeader>
-                {file.content && (
-                  <CardContent className="p-0">
-                    <pre className="m-0 overflow-x-auto p-4 text-sm font-mono">
-                      <code>
-                        {highlightMatches(
-                          getContentPreview(file.content),
-                          query || ""
-                        )}
-                      </code>
-                    </pre>
-                  </CardContent>
-                )}
-              </Card>
-            ))}
+
+                  {/* Code Content */}
+                  <div className="bg-background/50">
+                    <Table>
+                      <TableBody>
+                        {contentLines.map((line, index) => (
+                          <TableRow key={index} className="hover:bg-muted/30">
+                            <TableCell className="p-0 w-14 text-right border-r border-card/30 text-muted-foreground">
+                              <div className="px-2 py-1 text-xs tabular-nums">
+                                {index + 1}
+                              </div>
+                            </TableCell>
+                            <TableCell className="px-4 py-1">
+                              <div className="font-mono text-sm whitespace-pre-wrap">
+                                {query ? highlightMatches(line, query) : line}
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                </div>
+              );
+            })}
           </div>
         ) : (
           <Card className="flex flex-col items-center justify-center text-center p-8 bg-card/50 border-dashed">
