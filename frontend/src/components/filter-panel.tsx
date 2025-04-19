@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Search, X, ChevronRight, ChevronDown } from "lucide-react";
+import { Search, X } from "lucide-react";
 import {
   Accordion,
   AccordionContent,
