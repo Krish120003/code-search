@@ -78,12 +78,22 @@ async function deleteDocumentsByQuery(query: string): Promise<void> {
 }
 
 /**
+ * Escape Solr special characters
+ * @param query The query string to escape.
+ */
+function escapeSolrQuery(query: string): string {
+  const specialChars = /([+\-&|!(){}[\]^"~*?:\\\/])/g;
+  return query.replace(specialChars, "\\$1");
+}
+
+/**
  * Performs a search query.
  * @param query The Solr search query (e.g., 'description:test').
  */
 async function searchDocuments(queryString: string): Promise<any> {
   try {
-    const query = client.query().q(queryString); // Basic query
+    const escapedQuery = escapeSolrQuery(queryString);
+    const query = client.query().q(escapedQuery); // Basic query
     // Add more query parameters as needed, e.g.:
     // query.start(0).rows(10).fl(['id', 'title']);
 
