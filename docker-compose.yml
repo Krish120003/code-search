@@ -2,19 +2,32 @@ version: "3.8"
 services:
   solr:
     image: solr:9
-    container_name: solr
+    container_name: codesearch_solr
     ports:
       - "8983:8983"
     volumes:
       - solr_data:/var/solr
     command: solr-precreate code
     networks:
-      - solr_net
+      - app_net
+
+  redis:
+    image: redis:7-alpine
+    container_name: codesearch_redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes
+    networks:
+      - app_net
 
 volumes:
   solr_data:
     name: solr_data
+  redis_data:
+    name: redis_data
 
 networks:
-  solr_net:
+  app_net:
     driver: bridge

@@ -60,9 +60,17 @@ function SearchFilesComponent() {
     <div className="container mx-auto px-4 py-8">
       <div className="mb-6 flex items-center justify-between">
         <h1 className="text-2xl font-bold">Code Search</h1>
-        <Button asChild variant="default">
-          <Link href="/add-code-file">Add New File</Link>
-        </Button>
+        <div className="flex gap-2">
+          <Button asChild variant="outline">
+            <Link href="/ingest">
+              <Github className="h-4 w-4 mr-1" />
+              Add Repository
+            </Link>
+          </Button>
+          <Button asChild variant="default">
+            <Link href="/add-code-file">Add New File</Link>
+          </Button>
+        </div>
       </div>
 
       {/* Search bar */}
