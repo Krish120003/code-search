@@ -36,6 +36,9 @@ export function detectLanguage(filePath: string): string {
     ".markdown": "markdown",
     ".rst": "restructuredtext",
     ".adoc": "asciidoc",
+    ".tex": "latex",
+    ".ltx": "latex",
+    ".latex": "latex",
 
     // Stylesheets
     ".css": "css",
