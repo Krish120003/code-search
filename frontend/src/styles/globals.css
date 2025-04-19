@@ -66,6 +66,19 @@ pre::-webkit-scrollbar-thumb:hover {
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
+
+  /* Grep design tokens */
+  --grep-0: var(--background);
+  --grep-1: var(--card);
+  --grep-2: var(--border);
+  --grep-3: oklch(0.3 0 0);
+  --grep-4: oklch(0.4 0 0);
+  --grep-6: oklch(0.5 0 0);
+  --grep-7: oklch(0.6 0 0);
+  --grep-9: oklch(0.7 0 0);
+  --grep-10: oklch(0.8 0 0);
+  --grep-11: oklch(0.25 0 0);
+  --grep-12: var(--primary);
 }
 
 :root {
@@ -109,5 +122,48 @@ pre::-webkit-scrollbar-thumb:hover {
   }
   body {
     @apply bg-background text-foreground;
+  }
+}
+
+/* Tailwind utilities for grep tokens */
+@layer utilities {
+  .bg-grep-0 {
+    background-color: var(--grep-0);
+  }
+  .bg-grep-1 {
+    background-color: var(--grep-1);
+  }
+  .bg-grep-3 {
+    background-color: var(--grep-3);
+  }
+  .bg-grep-11 {
+    background-color: var(--grep-11);
+  }
+  .border-grep-2 {
+    border-color: var(--grep-2);
+  }
+  .border-grep-4 {
+    border-color: var(--grep-4);
+  }
+  .border-grep-6 {
+    border-color: var(--grep-6);
+  }
+  .text-grep-7 {
+    color: var(--grep-7);
+  }
+  .text-grep-9 {
+    color: var(--grep-9);
+  }
+  .text-grep-10 {
+    color: var(--grep-10);
+  }
+  .focus-visible\:border-grep-12:focus-visible {
+    border-color: var(--grep-12);
+  }
+  .focus-visible\:ring-grep-4:focus-visible {
+    --tw-ring-color: var(--grep-4);
+  }
+  .placeholder\:text-grep-7::placeholder {
+    color: var(--grep-7);
   }
 }

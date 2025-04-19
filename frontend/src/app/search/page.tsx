@@ -123,84 +123,76 @@ export default function SearchFilesPage() {
 
       {/* Search bar */}
       <div className="mb-6 sticky top-0 z-10 bg-background/95 pt-2 pb-4">
-        <div className="relative">
-          <div className="relative">
-            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-            <Input
-              ref={inputRef}
-              type="text"
-              value={query || ""}
-              onChange={(e) => setQuery(e.target.value || null)}
-              placeholder="Search code..."
-              aria-label="Search code"
-              className="pl-9 pr-28 bg-background h-11 text-base"
-            />
-            {query && (
-              <Button
-                variant="ghost"
-                size="icon"
-                className="absolute right-1 top-1 h-8 w-8 rounded-full"
-                onClick={() => setQuery(null)}
-                aria-label="Clear search"
-              >
-                <X className="h-4 w-4" />
-              </Button>
-            )}
+        <div className="relative w-full flex-grow md:max-w-[625px] mx-auto">
+          <Input
+            ref={inputRef}
+            type="text"
+            value={query || ""}
+            onChange={(e) => setQuery(e.target.value || null)}
+            placeholder="Search code..."
+            aria-label="Search code"
+            className="flex w-full min-w-0 shrink rounded-md border border-grep-4 bg-grep-0 px-3 py-1 text-sm transition-colors focus-visible:border-grep-12 focus-visible:bg-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-grep-4 disabled:cursor-not-allowed disabled:opacity-50 placeholder:text-grep-7 h-[42px] pr-24 md:h-9"
+            spellCheck="false"
+            autoCapitalize="off"
+            autoComplete="off"
+            autoCorrect="off"
+          />
 
-            {/* Search options */}
-            <div className="absolute right-12 top-1/2 -translate-y-1/2 flex items-center gap-1">
-              <Button
-                variant="ghost"
-                size="icon"
-                className={cn(
-                  "h-7 w-7 rounded-md",
-                  caseSensitive && "bg-primary/10 border border-primary/20"
-                )}
-                onClick={() => setCaseSensitive(!caseSensitive)}
-                aria-label="Match case"
-                title="Match case"
+          {/* Search options */}
+          <div className="absolute right-2 top-1/2 flex -translate-y-1/2 items-center gap-1">
+            <button
+              type="button"
+              aria-pressed={caseSensitive}
+              data-state={caseSensitive ? "on" : "off"}
+              onClick={() => setCaseSensitive(!caseSensitive)}
+              className="border border-transparent inline-flex items-center justify-center gap-2 rounded-md text-sm text-grep-9 font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 data-[state=on]:bg-grep-11 data-[state=on]:border-grep-6 data-[state=on]:text-foreground bg-transparent h-6 px-1 min-w-6"
+              aria-label="Match case"
+            >
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 16 16"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-4 w-4"
               >
-                <svg
-                  width="16"
-                  height="16"
-                  viewBox="0 0 16 16"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-4 w-4"
-                >
-                  <path
-                    d="M11.6667 11C12.7713 11 13.6667 10.1046 13.6667 9C13.6667 7.89543 12.7713 7 11.6667 7C10.5621 7 9.66669 7.89543 9.66669 9C9.66669 10.1046 10.5621 11 11.6667 11Z"
-                    stroke="currentColor"
-                    strokeWidth="1.5"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                  <path
-                    d="M13.6667 7V11"
-                    stroke="currentColor"
-                    strokeWidth="1.5"
-                    strokeLinecap="square"
-                    strokeLinejoin="round"
-                  />
-                  <path
-                    fillRule="evenodd"
-                    clipRule="evenodd"
-                    d="M3.26242 10.0789L2.63419 11.8414L2.57767 12H0.985229L1.22126 11.3378L4.22128 2.92102L5.63421 2.92102L8.63419 11.3378L8.87023 12H7.27779L7.22126 11.8414L6.59305 10.0789H6.5777H3.2777H3.26242ZM3.79707 8.57885H6.0584L4.92774 5.40668L3.79707 8.57885Z"
-                    fill="currentColor"
-                  />
-                </svg>
-              </Button>
+                <path
+                  d="M11.6667 11C12.7713 11 13.6667 10.1046 13.6667 9C13.6667 7.89543 12.7713 7 11.6667 7C10.5621 7 9.66669 7.89543 9.66669 9C9.66669 10.1046 10.5621 11 11.6667 11Z"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+                <path
+                  d="M13.6667 7V11"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  strokeLinecap="square"
+                  strokeLinejoin="round"
+                />
+                <path
+                  fillRule="evenodd"
+                  clipRule="evenodd"
+                  d="M3.26242 10.0789L2.63419 11.8414L2.57767 12H0.985229L1.22126 11.3378L4.22128 2.92102L5.63421 2.92102L8.63419 11.3378L8.87023 12H7.27779L7.22126 11.8414L6.59305 10.0789H6.5777H3.2777H3.26242ZM3.79707 8.57885H6.0584L4.92774 5.40668L3.79707 8.57885Z"
+                  fill="currentColor"
+                />
+              </svg>
+            </button>
 
-              <Button
-                variant="ghost"
-                size="icon"
-                className={cn(
-                  "h-7 w-7 rounded-md",
-                  wholeWord && "bg-primary/10 border border-primary/20"
-                )}
+            <div
+              role="group"
+              dir="ltr"
+              className="flex items-center justify-center gap-1"
+            >
+              <button
+                type="button"
+                data-state={wholeWord ? "on" : "off"}
+                role="radio"
+                aria-checked={wholeWord}
                 onClick={() => setWholeWord(!wholeWord)}
-                aria-label="Match whole word"
-                title="Match whole word"
+                className="border border-transparent inline-flex items-center justify-center gap-2 rounded-md text-sm text-grep-9 font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 data-[state=on]:bg-grep-11 data-[state=on]:border-grep-6 data-[state=on]:text-foreground bg-transparent h-6 px-1 min-w-6"
+                aria-label="Match whole words"
+                tabIndex={-1}
               >
                 <svg
                   width="16"
@@ -245,18 +237,17 @@ export default function SearchFilesPage() {
                     strokeLinejoin="round"
                   />
                 </svg>
-              </Button>
+              </button>
 
-              <Button
-                variant="ghost"
-                size="icon"
-                className={cn(
-                  "h-7 w-7 rounded-md",
-                  useRegex && "bg-primary/10 border border-primary/20"
-                )}
+              <button
+                type="button"
+                data-state={useRegex ? "on" : "off"}
+                role="radio"
+                aria-checked={useRegex}
                 onClick={() => setUseRegex(!useRegex)}
+                className="border border-transparent inline-flex items-center justify-center gap-2 rounded-md text-sm text-grep-9 font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 data-[state=on]:bg-grep-11 data-[state=on]:border-grep-6 data-[state=on]:text-foreground bg-transparent h-6 px-1 min-w-6"
                 aria-label="Use regular expression"
-                title="Use regular expression"
+                tabIndex={-1}
               >
                 <svg
                   width="16"
@@ -308,9 +299,19 @@ export default function SearchFilesPage() {
                     strokeLinecap="round"
                   />
                 </svg>
-              </Button>
+              </button>
             </div>
           </div>
+
+          {query && (
+            <button
+              type="button"
+              className="absolute right-[88px] top-1/2 -translate-y-1/2 rounded-full h-5 w-5 inline-flex items-center justify-center text-grep-7 hover:text-grep-10 hover:bg-grep-3"
+              onClick={() => setQuery(null)}
+            >
+              <X className="h-3 w-3" />
+            </button>
+          )}
         </div>
       </div>
 
