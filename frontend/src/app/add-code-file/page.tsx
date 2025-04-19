@@ -105,6 +105,7 @@ export default function AddCodeFilePage() {
                   <SelectItem value="c">C</SelectItem>
                   <SelectItem value="cpp">C++</SelectItem>
                   <SelectItem value="csharp">C#</SelectItem>
+                  <SelectItem value="latex">LaTeX</SelectItem>
                   <SelectItem value="other">Other</SelectItem>
                 </SelectContent>
               </Select>
