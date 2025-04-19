@@ -40,6 +40,25 @@ services:
     networks:
       - app_net
 
+  frontend:
+    build: ./frontend
+    container_name: codesearch_frontend
+    ports:
+      - "3000:3000"
+    depends_on:
+      - redis
+      - solr
+      - worker
+    restart: unless-stopped
+    environment:
+      - REDIS_URL=redis://redis:6379
+      - SOLR_HOST=solr
+      - SOLR_PORT=8983
+      - SOLR_CORE=code
+      - NODE_ENV=production
+    networks:
+      - app_net
+
 volumes:
   solr_data:
     name: solr_data
