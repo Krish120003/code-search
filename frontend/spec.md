@@ -93,3 +93,107 @@ Efficient Rendering: Virtual scrolling/windowing might be necessary for the resu
 API Optimization: Ensure API requests are minimal and responses are processed efficiently.
 Component Design: Break down the UI into reusable components (SearchBar, FilterSection, ResultItem, etc.).
 Highlighting: Use a library or custom logic to highlight search terms within the fetched code snippets.
+
+# HUGE EXAMPLE
+
+This is exactly what one search result entry looks like on grep.app
+
+```html
+<div
+  class="flex w-full min-w-32 shrink-0 flex-col overflow-hidden text-wrap rounded-md border border-grep-2"
+>
+  <div
+    class="flex min-h-10 w-full items-center justify-between border-b bg-grep-0 px-4"
+  >
+    <div class="flex flex-col py-1 sm:flex-row sm:gap-2">
+      <div class="flex shrink-0 flex-row items-center gap-2">
+        <img
+          alt="14101776 avatar"
+          width="16"
+          height="16"
+          class="rounded-sm"
+          src="https://avatars.githubusercontent.com/u/14101776?s=60&amp;v=4"
+        /><a href="https://github.com/flutter/flutter"
+          ><span class="text-sm font-medium hover:underline"
+            >flutter/flutter</span
+          ></a
+        >
+      </div>
+      <a
+        href="https://github.com/flutter/flutter/blob/master/packages/flutter/lib/src/animation/curves.dart"
+        ><span class="text-sm text-grep-9 hover:underline"
+          >packages<wbr />/flutter<wbr />/lib<wbr />/src<wbr />/animation<wbr />/curves.dart</span
+        ></a
+      >
+    </div>
+    <div class="hidden text-nowrap text-xs text-grep-9 md:block">
+      100+ matches
+    </div>
+  </div>
+  <div>
+    <table class="highlight-table">
+      <tbody>
+        <tr data-line="103">
+          <td><div class="lineno">103</div></td>
+          <td>
+            <div class="highlight">
+              <pre><span class="w">  </span><span class="c1">/// {@animation 464 192 https://flutter.<mark>github</mark>.io/assets-for-api-docs/assets/animation/curve_bounce_in.mp4}</span></pre>
+            </div>
+          </td>
+        </tr>
+        <tr data-line="104">
+          <td><div class="lineno">104</div></td>
+          <td>
+            <div class="highlight">
+              <pre><span class="w">  </span><span class="c1">/// {@animation 464 192 https://flutter.<mark>github</mark>.io/assets-for-api-docs/assets/animation/curve_flipped.mp4}</span></pre>
+              <div class="jump"></div>
+            </div>
+          </td>
+        </tr>
+        <tr data-line="129">
+          <td><div class="lineno">129</div></td>
+          <td>
+            <div class="highlight">
+              <pre><span class="c1">/// {@animation 464 192 https://flutter.<mark>github</mark>.io/assets-for-api-docs/assets/animation/curve_sawtooth.mp4}</span></pre>
+            </div>
+          </td>
+        </tr>
+        <tr data-line="130">
+          <td><div class="lineno">130</div></td>
+          <td>
+            <div class="highlight">
+              <pre><span class="kd">class</span><span class="w"> </span><span class="nc">SawTooth</span><span class="w"> </span><span class="kd">extends</span><span class="w"> </span><span class="n">Curve</span><span class="w"> </span><span class="p">{</span></pre>
+              <div class="jump"></div>
+            </div>
+          </td>
+        </tr>
+        <tr data-line="157">
+          <td><div class="lineno">157</div></td>
+          <td>
+            <div class="highlight">
+              <pre><span class="c1">/// {@animation 464 192 https://flutter.<mark>github</mark>.io/assets-for-api-docs/assets/animation/curve_interval.mp4}</span></pre>
+            </div>
+          </td>
+        </tr>
+        <tr data-line="158">
+          <td><div class="lineno">158</div></td>
+          <td>
+            <div class="highlight">
+              <pre><span class="kd">class</span><span class="w"> </span><span class="nc">Interval</span><span class="w"> </span><span class="kd">extends</span><span class="w"> </span><span class="n">Curve</span><span class="w"> </span><span class="p">{</span></pre>
+              <div class="jump"></div>
+            </div>
+          </td>
+        </tr>
+        <tr data-line="212">
+          <td><div class="lineno">212</div></td>
+          <td>
+            <div class="highlight">
+              <pre><span class="c1">/// {@animation 464 192 https://flutter.<mark>github</mark>.io/assets-for-api-docs/assets/animation/curve_split.mp4}</span></pre>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+```

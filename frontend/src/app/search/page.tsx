@@ -67,7 +67,7 @@ export default function SearchFilesPage() {
       const parts = text.split(new RegExp(`(${searchTerm})`, "gi"));
       return parts.map((part, i) =>
         part.toLowerCase() === searchTerm.toLowerCase() ? (
-          <mark key={i} className="bg-[#7AB]/40 text-white">
+          <mark key={i} className="bg-primary/20 text-foreground">
             {part}
           </mark>
         ) : (
@@ -90,7 +90,7 @@ export default function SearchFilesPage() {
       </div>
 
       {/* Search bar */}
-      <div className="mb-6 sticky top-0 z-10 bg-[#212121]/95 pt-2 pb-4">
+      <div className="mb-6 sticky top-0 z-10 bg-background/95 pt-2 pb-4">
         <div className="relative">
           <div className="relative">
             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
