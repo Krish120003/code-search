@@ -33,7 +33,7 @@ export default function RootLayout({
           <header className="fixed left-0 right-0 top-0 z-10 bg-background/80 backdrop-blur-sm border-b p-4">
             <div className="mx-auto flex max-w-7xl items-center justify-between">
               <h1 className="font-mono text-2xl font-bold">
-                ▲ code<span className="text-primary">search</span>
+                code<span className="text-primary">search</span>
               </h1>
             </div>
           </header>
