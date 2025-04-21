@@ -99,7 +99,7 @@ export async function searchFiles(
     const escapedQuery = escapeSolrQuery(query);
 
     // Format the query to search in content_t and filename_s fields (matching the worker's field names)
-    let solrSearchQuery = `content_t:*${escapedQuery}* OR filename_s:*${escapedQuery}*`;
+    let solrSearchQuery = `content_t:${escapedQuery} OR filename_s:${escapedQuery}`;
 
     // Apply filters if they exist
     const filterQueries = [];
