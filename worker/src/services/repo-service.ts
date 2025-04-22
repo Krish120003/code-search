@@ -4,6 +4,7 @@ import * as os from "os";
 import * as crypto from "crypto";
 import simpleGit from "simple-git";
 import { RepoMetadata, CodeFile } from "../types";
+import { sendIngestionDetails } from "./ingestion-client";
 
 /**
  * Detect programming or markup language based on file extension.
@@ -580,6 +581,45 @@ export async function cleanupRepository(
     console.log(`Repository ${repoMetadata.url} cleaned up successfully`);
   } catch (error) {
     console.error("Error cleaning up repository:", error);
+    // Don't throw here, just log the error
+  }
+}
+
+// Send ingestion details after successful processing
+export async function sendIngestionDetailsAfterProcessing(
+  repoMetadata: RepoMetadata,
+  codeFiles: CodeFile[],
+  ingestionTime: number
+): Promise<void> {
+  try {
+    const fileTypes: Record<string, number> = {};
+
+    // Count file types
+    for (const file of codeFiles) {
+      if (!fileTypes[file.language]) {
+        fileTypes[file.language] = 0;
+      }
+      fileTypes[file.language]++;
+    }
+
+    // Prepare ingestion details
+    const details = {
+      repoUrl: repoMetadata.url,
+      stats: {
+        numberOfFiles: codeFiles.length,
+        ingestionTime,
+        completionTime: new Date().toISOString(),
+      },
+      fileTypes: Object.entries(fileTypes).map(([fileType, count]) => ({
+        fileType,
+        count,
+      })),
+    };
+
+    // Send ingestion details to the API
+    await sendIngestionDetails(details);
+  } catch (error) {
+    console.error("Error sending ingestion details:", error);
     // Don't throw here, just log the error
   }
 }
